@@ -1,0 +1,6 @@
+Flask
+tensorflow
+numpy
+Pillow
+gunicorn
+openai

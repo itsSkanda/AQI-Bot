@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: aqi-predictor      # Name your service
+    env: python
+    region: oregon           # Choose your preferred region
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app

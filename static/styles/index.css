@@ -1,0 +1,131 @@
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background-image: url("../image-bg/sky.jpg"); /* Adjusted path for CSS location */
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+}
+
+/* Navbar Styling */
+.navbar {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.navbar .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+    color: #fff;
+}
+.navbar-brand {
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Full Page Section Styling */
+.page-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 20px;
+}
+
+/* Glass Container for content inside each section */
+.glass-container {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 2rem 2.5rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    max-width: 650px;
+    width: 100%;
+    text-align: center;
+}
+.glass-container h2 {
+    font-family: 'Fredoka One', cursive;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    font-size: 2rem;
+}
+.glass-container p, .aqi-details span {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+}
+
+/* Cloud emoji decoration */
+.cloud-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 50px;
+    padding: 0.8rem 1.6rem;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    border: none;
+}
+.btn-custom:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* AQI Result Styling */
+#aqi-result {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 10px;
+    min-height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.5s ease;
+    flex-direction: column; /* To stack AQI value and details vertically */
+}
+.aqi-value { 
+    font-size: 2.5rem; 
+    font-weight: 700; 
+    margin-right: 15px; 
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); 
+}
+.aqi-details { 
+    text-align: left; 
+}
+.aqi-category { 
+    font-size: 1.2rem; 
+    font-weight: 600; 
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); 
+}
+.error-message { 
+    color: #ffcccc; 
+    font-weight: 500; 
+}
+
+/* Form Control Styling */
+.form-control-glass {
+    background: rgba(0, 0, 0, 0.2) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px;
+    padding: 0.6rem;
+}
+.form-control-glass::placeholder { 
+    color: rgba(255, 255, 255, 0.7); 
+}

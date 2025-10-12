@@ -1,0 +1,151 @@
+/* General Body Styles - Matching the main theme */
+body {
+    margin: 0;
+    background-image: url("../images/sky.jpg"); /* Assumes sky.jpg is in static/images */
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Main Glass Container */
+.glass-container {
+    background: rgba(0, 0, 0, 0.25); /* Darker glass for better contrast */
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    padding: 2rem 2.5rem;
+    width: 100%;
+    max-width: 900px; /* Increased max-width for this layout */
+}
+
+/* Smaller glass cards inside the main container */
+.glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    height: 100%; /* Make cards in a row equal height */
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #fff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.content {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.aqi-box {
+    flex: 1;
+    min-width: 250px;
+}
+
+.form-container {
+    flex: 2;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.aqi-box h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.aqi-box ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.aqi-box li {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+}
+
+/* AQI Level Colors */
+.good { background-color: #00E400; }
+.moderate { background-color: #FFFF00; color: #000; text-shadow: none; }
+.sensitive { background-color: #FF7E00; }
+.unhealthy { background-color: #FF0000; }
+.very-unhealthy { background-color: #8F3F97; }
+.hazardous { background-color: #7E0023; }
+
+/* Form Styling */
+.form-section label {
+    font-size: 1.1rem;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.form-control-glass {
+    background: rgba(0, 0, 0, 0.2) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 8px;
+}
+.form-control-glass::placeholder { color: rgba(255, 255, 255, 0.7); }
+
+.btn-custom {
+    border: none;
+    border-radius: 50px;
+    padding: 0.7rem 1.5rem;
+    font-size: 1.1rem;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+.btn-custom:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Result Box Styling */
+.result-box {
+    text-align: center;
+}
+.result-box p {
+    font-size: 1.2rem;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+.result-box img {
+    max-width: 100%;
+    width: 280px;
+    height: auto;
+    margin-top: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+}
+
+/* Back Button */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 50px;
+    background-color: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+}

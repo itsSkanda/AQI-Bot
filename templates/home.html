@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQI Bot - Scrollable Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/index.css') }}">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">🌤️ AQI Bot</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#prediction">Prediction</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#chat">Chat</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section id="about" class="page-section">
+            <div class="glass-container">
+                <h2>About Air Quality</h2>
+                <p class="mb-4">The Air Quality Index (AQI) is used to communicate how polluted the air currently is. Enter any city name below to get its live AQI data.</p>
+                
+                <div class="cloud-emoji">☁️🌤️</div>
+                <div class="input-group mb-3">
+                    <input type="text" id="city-input" class="form-control form-control-glass" placeholder="E.g., London, Tokyo, New York...">
+                    <button class="btn btn-light" id="get-aqi-btn"><i class="bi bi-search"></i></button>
+                </div>
+
+                <div id="aqi-result" style="text-align:center; display:none;"></div>
+
+                <canvas id="aqi-trend-chart" style="margin-top:20px; display:none;"></canvas>
+                <canvas id="pollutants-chart" style="margin-top:20px; display:none;"></canvas>
+            </div>
+        </section>
+
+        <section id="prediction" class="page-section">
+            <div class="glass-container">
+                <h2>Image-Based AQI Prediction</h2>
+                <p>Our custom model can predict the AQI value simply by analyzing an image of the sky. Click the button below to try it yourself.</p>
+                <a href="{{ url_for('predictor') }}" class="btn btn-light btn-custom">
+                    <i class="bi bi-graph-up-arrow"></i> Go to Predictor
+                </a>
+            </div>
+        </section>
+
+        <section id="chat" class="page-section">
+            <div class="glass-container">
+                <h2>AI-Powered ChatBot</h2>
+                <p>Have questions about air quality, its effects, or how to stay safe? Ask our helpful AI assistant for quick and clear answers.</p>
+                <a href="{{ url_for('chat_page') }}" class="btn btn-light btn-custom">
+                    <i class="bi bi-chat-dots"></i> Start Chatting
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- Paste your API Token from https://aqicn.org/data-platform/token/ here ---
+        const API_TOKEN = "0c94013a4e76e91ed47d0e08078effbfd49c026f"; // Replace with your actual token
+
+        // --- Scroll-based Active Nav Link Logic ("Scrollspy") ---
+        const sections = document.querySelectorAll('.page-section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // --- AQI Fetch Logic ---
+        const cityInput = document.getElementById('city-input');
+        const getAqiBtn = document.getElementById('get-aqi-btn');
+        const aqiResultDiv = document.getElementById('aqi-result');
+
+        let trendChart, pollutantChart; // Chart instances
+
+        function getAqiInfo(aqi) {
+            if (aqi <= 50) return { category: 'Good', textColor: '#1E8449', bgColor: 'rgba(40, 167, 69, 0.3)' };
+            if (aqi <= 100) return { category: 'Moderate', textColor: '#B7950B', bgColor: 'rgba(255, 193, 7, 0.3)' };
+            if (aqi <= 150) return { category: 'Unhealthy for Sensitive', textColor: '#AF601A', bgColor: 'rgba(253, 126, 20, 0.4)' };
+            if (aqi <= 200) return { category: 'Unhealthy', textColor: '#A93226', bgColor: 'rgba(220, 53, 69, 0.4)' };
+            if (aqi <= 300) return { category: 'Very Unhealthy', textColor: '#6C3483', bgColor: 'rgba(111, 66, 193, 0.4)' };
+            return { category: 'Hazardous', textColor: '#641E16', bgColor: 'rgba(139, 0, 0, 0.5)' };
+        }
+
+        const fetchAqi = () => {
+    const city = cityInput.value.trim();
+
+    // Hide charts initially
+    document.getElementById('aqi-trend-chart').style.display = 'none';
+    document.getElementById('pollutants-chart').style.display = 'none';
+
+    if (!city) {
+        aqiResultDiv.style.display = 'flex';
+        aqiResultDiv.innerHTML = `<p class="error-message">Please enter a city name.</p>`;
+        aqiResultDiv.style.backgroundColor = 'rgba(220,53,69,0.3)';
+        return;
+    }
+
+    if (API_TOKEN === "YOUR_API_TOKEN_HERE") {
+        aqiResultDiv.style.display = 'flex';
+        aqiResultDiv.innerHTML = `<p class="error-message">Error: API Token is not set.</p>`;
+        aqiResultDiv.style.backgroundColor = 'rgba(220,53,69,0.3)';
+        return;
+    }
+
+    aqiResultDiv.style.display = 'flex';
+    aqiResultDiv.innerHTML = `<p>Fetching data for ${city}...</p>`;
+    aqiResultDiv.style.backgroundColor = 'rgba(0,0,0,0.2)';
+
+    fetch(`https://api.waqi.info/feed/${city}/?token=${API_TOKEN}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const aqi = data.data.aqi;
+                const aqiInfo = getAqiInfo(aqi);
+                const iaqi = data.data.iaqi || {};
+
+                // Show AQI + pollutants
+                aqiResultDiv.innerHTML = `
+                    <div class="aqi-value" style="color:${aqiInfo.textColor}; font-size:2.3rem;">
+                        🌫️ AQI Today: ${aqi} (${aqiInfo.category})
+                    </div>
+                    <div class="aqi-details" style="margin-top:8px; font-size:1rem; text-align:center;">
+                        PM2.5: ${iaqi.pm25 ? iaqi.pm25.v : '-'} μg/m³ | PM10: ${iaqi.pm10 ? iaqi.pm10.v : '-'} μg/m³<br>
+                        CO: ${iaqi.co ? iaqi.co.v : '-'} ppm | NO2: ${iaqi.no2 ? iaqi.no2.v : '-'} ppb
+                    </div>
+                `;
+                aqiResultDiv.style.backgroundColor = aqiInfo.bgColor;
+
+                // Show charts
+                const forecastPM25 = data.data.forecast?.daily?.pm25 || [];
+                const labels = forecastPM25.map(h => h.day);
+                const trendData = forecastPM25.map(h => h.avg);
+
+                // Trend chart
+                if (trendChart) trendChart.destroy();
+                const ctx = document.getElementById('aqi-trend-chart').getContext('2d');
+                trendChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'PM2.5 Trend (Last 24h)',
+                            data: trendData,
+                            fill: true,
+                            backgroundColor: 'rgba(255,255,255,0.2)',
+                            borderColor: '#fff',
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#fff' } } },
+                        scales: {
+                            y: { ticks: { color: '#fff' }, beginAtZero: true },
+                            x: { ticks: { color: '#fff' } }
+                        }
+                    }
+                });
+                document.getElementById('aqi-trend-chart').style.display = 'block';
+
+                // Pollutants chart
+                const pollutants = ['pm25','pm10','co','no2'];
+                const pValues = pollutants.map(p => iaqi[p] ? iaqi[p].v : 0);
+
+                if (pollutantChart) pollutantChart.destroy();
+                const pCtx = document.getElementById('pollutants-chart').getContext('2d');
+                pollutantChart = new Chart(pCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['PM2.5','PM10','CO','NO2'],
+                        datasets: [{
+                            data: pValues,
+                            backgroundColor: [
+                                'rgba(40,167,69,0.6)',
+                                'rgba(255,193,7,0.6)',
+                                'rgba(0,123,255,0.6)',
+                                'rgba(220,53,69,0.6)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#fff' } } }
+                    }
+                });
+                document.getElementById('pollutants-chart').style.display = 'block';
+
+            } else {
+                aqiResultDiv.style.display = 'flex';
+                aqiResultDiv.innerHTML = `<p class="error-message">Could not retrieve data. Please check the city name.</p>`;
+                aqiResultDiv.style.backgroundColor = 'rgba(220,53,69,0.3)';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            aqiResultDiv.style.display = 'flex';
+            aqiResultDiv.innerHTML = `<p class="error-message">An error occurred. Please try again.</p>`;
+            aqiResultDiv.style.backgroundColor = 'rgba(220,53,69,0.3)';
+        });
+};
+
+
+        getAqiBtn.addEventListener('click', fetchAqi);
+        cityInput.addEventListener('keypress', e => { if(e.key==='Enter') fetchAqi(); });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

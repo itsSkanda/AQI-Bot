@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQI Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Fredoka+One&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* Background */
+        body {
+            background-image: url('{{ url_for("static", filename="image-bg/sky.jpg") }}');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            /* Add padding to the top to prevent content from hiding behind the fixed navbar */
+            padding-top: 70px;
+            padding-bottom: 20px;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Glass Container */
+        .container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            padding: 2.5rem;
+            max-width: 900px;
+            margin-top: 20px; /* Added margin to give space from navbar */
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #fff;
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* AQI Info + Form Card */
+        .aqi-box,
+        .form-section {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .aqi-box h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        .aqi-box ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .aqi-box li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+        }
+
+        /* AQI Color Scale */
+        .aqi-box li:nth-child(1) { background-color: #00E400; }
+        .aqi-box li:nth-child(2) { background-color: #FFFF00; color: #000; text-shadow: none; }
+        .aqi-box li:nth-child(3) { background-color: #FF7E00; }
+        .aqi-box li:nth-child(4) { background-color: #FF0000; }
+        .aqi-box li:nth-child(5) { background-color: #8F3F97; }
+        .aqi-box li:nth-child(6) { background-color: #7E0023; }
+
+        /* Form Styling */
+        .form-section label {
+            font-size: 1.1rem;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        .form-section .form-control {
+            background: rgba(0, 0, 0, 0.25) !important;
+            color: #fff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 8px;
+        }
+
+        .form-section .form-control::file-selector-button {
+            background-color: #fff;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+
+        .form-section .btn {
+            background-color: #fff;
+            color: #333;
+            border: none;
+            border-radius: 50px;
+            padding: 0.7rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-section .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            background-color: #f0f0f0;
+        }
+
+        /* Prediction result (inline below form) */
+        .result-box {
+            text-align: center;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-box p {
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        .result-box img {
+            max-width: 100%;
+            width: 250px;
+            margin-top: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        @media (min-width: 992px) {
+            .content {
+                display: flex;
+                gap: 20px;
+            }
+
+            .aqi-box { flex: 1; }
+            .form-container { flex: 2; }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid"> <a class="navbar-brand" href="#">🌤️ AQI Bot</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item active"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About Us</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalTitle">Air Quality Index Project</h5>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4>Members</h4>
+                    <p>Abishek Skanda G - RA2411003010979</p>
+                    <p>Abhay R Dasarathy - RA2411003010973</p>
+                    <p>Thakshein AVS - RA2411003010978</p>
+                    <p>Kaartish - RA2411003010983</p>
+                    <h4>About</h4>
+                    <ul>
+                        <li>Class: P1 Section</li>
+                        <li>Advanced Programming Practice Project</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h1 class="header">Air Quality Index (AQI) Prediction</h1>
+
+        <div class="content">
+            <div class="aqi-box">
+                <h2 class="text-center">Air Quality Levels</h2>
+                <ul>
+                    <li>0–50: Good</li>
+                    <li>51–100: Moderate</li>
+                    <li>101–150: Unhealthy for sensitive groups</li>
+                    <li>151–200: Unhealthy</li>
+                    <li>201–300: Very unhealthy</li>
+                    <li>301–500: Hazardous</li>
+                </ul>
+            </div>
+
+            <div class="form-container">
+                <div class="form-section">
+                    <form action="/predictor" method="post" enctype="multipart/form-data">
+                        <label for="imagefile">Upload an image containing <b>sky</b></label>
+                        <br>
+                        <label for="imagefile">Supported formats: <b>.jpg, .jpeg</b></label>
+                        <br><br>
+                        <input class="form-control" type="file" name="imagefile">
+                        <input class="btn btn-primary" type="submit" value="Predict Image">
+                    </form>
+
+                    {% if prediction %}
+                    <div class="result-box">
+                        <p>AQI Index: <b>{{ prediction }}</b></p>
+                        <img src="{{ url_for('static', filename='images/' + imagefile) }}" alt="Uploaded Image">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>
